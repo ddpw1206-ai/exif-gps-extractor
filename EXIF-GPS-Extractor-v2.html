@@ -102,9 +102,9 @@
         }
 
         .status-message {
-            background: none;
-            border: none;
-            color: #166534;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
             padding: 12px 16px;
             border-radius: 8px;
             margin: 12px 0;
@@ -457,7 +457,7 @@
         </div>
 
         <div class="loading" id="loading">처리 중...</div>
-        <div class="status-message" id="statusMessage">-</div>
+        <div class="status-message" id="statusMessage">이미지 파일을 업로드하여 GPS 추출을 시작하세요</div>
 
         <div class="table-controls">
             <div class="table-title">추출 결과</div>
@@ -718,8 +718,9 @@
             loading.classList.add('active');
 
             // 초기화: 메시지는 유지하되 스타일만 제거하거나 '-' 표시
+            // 초기화: 대기 상태 메시지로 변경
             statusMessage.classList.remove('active');
-            statusMessage.innerHTML = '-';
+            statusMessage.innerHTML = '파일 처리 중...';
 
             newDataCount = 0;
             sessionErrors = [];
