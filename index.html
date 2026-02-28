@@ -326,19 +326,17 @@
 
         /* v2 이동 버튼 */
         .v2-link {
-            position: fixed;
-            top: 16px;
-            right: 16px;
             background: var(--success-color);
             color: #ffffff;
-            padding: 8px 16px;
-            border-radius: 8px;
+            padding: 10px 16px;
+            border-radius: 10px;
             text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            z-index: 1000;
+            font-size: 14px;
+            font-weight: 600;
             transition: all 0.2s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: inline-flex;
+            align-items: center;
         }
 
         .v2-link:hover {
@@ -369,10 +367,13 @@
     </div>
 
     <div id="mainApp" style="display:none">
-        <button id="logoutBtn"
-            style="position:fixed; top:20px; right:140px; background:white; color:#dc2626; border:1px solid #fca5a5; border-radius:10px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.1);">로그아웃</button>
-        <a href="https://ddpw1206-ai.github.io/exif-gps-extractor/EXIF-GPS-Extractor-v2.html" class="v2-link">ver2.2로 이동
-            →</a>
+        <div style="position:fixed; top:20px; right:20px; display:flex; gap:12px; z-index:1001;">
+            <button id="logoutBtn"
+                style="background:white; color:#dc2626; border:1px solid #fca5a5; border-radius:10px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.1); transition: all 0.2s;">로그아웃</button>
+            <a href="https://ddpw1206-ai.github.io/exif-gps-extractor/EXIF-GPS-Extractor-v2.html"
+                class="v2-link">ver2.2로 이동
+                →</a>
+        </div>
 
         <div class="main-container">
             <div class="header">
