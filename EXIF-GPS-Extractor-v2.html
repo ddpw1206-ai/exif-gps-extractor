@@ -380,12 +380,36 @@
         .export-btn:hover {
             background: #15803d;
         }
+
+        /* v1 이동 버튼 */
+        .v1-link {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: #6b7280;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 1000;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .v1-link:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/exifreader@latest/dist/exif-reader.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
+    <a href="https://ddpw1206-ai.github.io/exif-gps-extractor/" class="v1-link">← v1으로 이동</a>
     <div class="container">
         <div style="text-align: center; margin-bottom: 24px;">
             <h1
