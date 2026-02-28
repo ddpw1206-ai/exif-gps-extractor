@@ -49,7 +49,7 @@
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            gap: 1rem;
         }
 
         .header {
@@ -68,7 +68,20 @@
         .header p {
             color: var(--text-secondary);
             font-size: 1.1rem;
-            margin: 0;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .guide-lines {
+            font-size: 13px;
+            color: #666;
+            text-align: left;
+            padding-left: 20%;
+        }
+
+        .header p:not(:first-of-type) {
+            font-size: 12px;
+            color: #999;
+            margin: 0.2rem 0;
         }
 
         .card {
@@ -87,6 +100,8 @@
             background-color: var(--bg-color);
             position: relative;
             overflow: hidden;
+            padding-top: 0.625rem;
+            padding-bottom: 0.625rem;
         }
 
         .upload-card.dragover {
@@ -199,7 +214,6 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            white-space: nowrap;
         }
 
         th,
@@ -207,10 +221,11 @@
             padding: 1rem 1.25rem;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
         }
 
         th {
-            background-color: var(--bg-color);
+            background-color: #f8f9fa;
             font-weight: 600;
             color: var(--text-secondary);
             font-size: 0.875rem;
@@ -227,12 +242,38 @@
             transition: background-color 0.2s ease;
         }
 
+        tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
         tbody tr:hover {
             background-color: var(--row-hover);
         }
 
         tbody tr:last-child td {
             border-bottom: none;
+        }
+
+        .col-filename {
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .col-address {
+            white-space: normal;
+            word-break: keep-all;
+            min-width: 120px;
+        }
+
+        .col-map {
+            min-width: 90px;
+            white-space: nowrap;
+        }
+
+        .col-coord {
+            white-space: nowrap;
         }
 
         .map-link {
@@ -281,10 +322,12 @@
         <div class="header">
             <h1>JPG to EXIF Geo Extractor</h1>
             <p>이미지의 메타데이터에서 GPS 좌표를 추출하고 도로명/지번 주소로 변환합니다.</p>
-            <p></p>
-            <p>반드시 촬영시 GPS 값을 포함한 사진이어야 하며, GPS 값이 포함되지 않은 사진은 변환되지 않습니다.</p>
-            <p>아이폰 설정 방법: 설정 앱 → 개인정보 보호 및 보안 → 위치 서비스 ON </p>
-            <p>갤럭시 설정 방법: 설정 → 위치 → ON, 카메라 앱 실행 → "위치 태그" 또는 "GPS 태그" 옵션 활성화 </p>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;">📌 GPS 정보가 포함된 사진만 변환됩니다.</p>
+            <div class="guide-lines">
+                <div>📱 <strong>아이폰</strong>: 설정 앱 → 개인정보 보호 및 보안 → 위치 서비스 ON</div>
+                <div style="margin-top: 4px;">📷 <strong>갤럭시</strong>: 설정 → 위치 → ON, 카메라 앱 → "위치 태그" 또는 "GPS 태그" 활성화
+                </div>
+            </div>
         </div>
 
         <div class="card upload-card" id="dropArea">
@@ -330,12 +373,12 @@
                 <table id="resultsTable">
                     <thead>
                         <tr>
-                            <th>파일명</th>
-                            <th>위도 (Lat)</th>
-                            <th>경도 (Lng)</th>
-                            <th>도로명주소</th>
-                            <th>지번주소</th>
-                            <th>네이버지도</th>
+                            <th class="col-filename">파일명</th>
+                            <th class="col-coord">위도 (Lat)</th>
+                            <th class="col-coord">경도 (Lng)</th>
+                            <th class="col-map">지도 링크</th>
+                            <th class="col-address">도로명주소</th>
+                            <th class="col-address">지번주소</th>
                         </tr>
                     </thead>
                     <tbody id="resultsBody">
@@ -433,11 +476,46 @@
             return defaultRef;
         }
 
+        function getAddressFromVworld(lat, lng) {
+            return new Promise((resolve, reject) => {
+                const callbackName = 'vworldCallback_' + Date.now();
+                const script = document.createElement('script');
+                const url = `https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${lng},${lat}&format=json&type=both&zipcode=true&simple=false&key=1093C6FE-9827-3C31-ADD5-20298B8AD1A1&callback=${callbackName}`;
+
+                window[callbackName] = function (data) {
+                    document.head.removeChild(script);
+                    delete window[callbackName];
+                    const result = data.response?.result;
+                    resolve({
+                        road: result?.find(r => r.type === 'road')?.text || '-',
+                        parcel: result?.find(r => r.type === 'parcel')?.text || '-'
+                    });
+                };
+
+                script.onerror = () => {
+                    document.head.removeChild(script);
+                    delete window[callbackName];
+                    reject(new Error('JSONP 실패'));
+                };
+
+                script.src = url;
+                document.head.appendChild(script);
+
+                setTimeout(() => {
+                    if (window[callbackName]) {
+                        document.head.removeChild(script);
+                        delete window[callbackName];
+                        reject(new Error('timeout'));
+                    }
+                }, 5000);
+            });
+        }
+
         async function processFile(file) {
             const tr = document.createElement('tr');
             tr.className = 'fade-in';
             tr.innerHTML = `
-                <td><strong>${file.name}</strong></td>
+                <td class="col-filename" title="${file.name}"><strong>${file.name}</strong></td>
                 <td colspan="5" class="status-text">데이터 추출 중...</td>
             `;
             resultsBody.appendChild(tr);
@@ -469,61 +547,54 @@
                     let roadAddress = "-";
                     let lotAddress = "-";
 
-                    // Nominatim(OpenStreetMap) 무료 API: 리버스 지오코딩 (좌표 -> 주소)
+                    // Vworld 주소 API: 리버스 지오코딩 (좌표 -> 주소) (JSONP 방식)
                     try {
-                        const targetUrl = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=ko`;
-                        const response = await fetch(targetUrl, {
-                            method: 'GET',
-                            headers: {
-                                'User-Agent': 'exif-gps-extractor/1.0'
-                            }
-                        });
-                        const resData = await response.json();
-                        if (resData && resData.display_name) {
-                            roadAddress = resData.display_name;
-                            lotAddress = "-";
-                        }
+                        const addrInfo = await getAddressFromVworld(latitude, longitude);
+                        roadAddress = addrInfo.road;
+                        lotAddress = addrInfo.parcel;
                     } catch (err) {
-                        console.error("Nominatim API 연결 오류:", err);
+                        console.error("Vworld API 연결 오류 (JSONP):", err);
                         roadAddress = "조회 실패";
                         lotAddress = "조회 실패";
                     }
 
-                    const mapLink = `https://map.naver.com/v5/?c=${longitude},${latitude},15,0,0,0,dh`;
+                    const naverLink = `https://map.naver.com/p/search/${parseFloat(latitude)}%2C${parseFloat(longitude)}`;
+                    const googleLink = `https://www.google.com/maps?q=${latitude},${longitude}&ll=${latitude},${longitude}&z=17`;
 
                     // 데이터 배열에 푸시 (Excel, CSV 다운로드 용도)
                     resultsData.push({
                         "파일명": file.name,
                         "위도": parseFloat(latitude),
                         "경도": parseFloat(longitude),
+                        "네이버지도": naverLink,
+                        "구글지도": googleLink,
                         "도로명주소": roadAddress,
-                        "지번주소": lotAddress,
-                        "네이버지도": mapLink
+                        "지번주소": lotAddress
                     });
 
                     tr.innerHTML = `
-                        <td><strong>${file.name}</strong></td>
-                        <td style="font-family: monospace;">${latitude}</td>
-                        <td style="font-family: monospace;">${longitude}</td>
-                        <td>${roadAddress}</td>
-                        <td>${lotAddress}</td>
-                        <td>
-                            <a href="${mapLink}" target="_blank" class="map-link">
-                                네이버지도
-                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                            </a>
+                        <td class="col-filename" title="${file.name}"><strong>${file.name}</strong></td>
+                        <td class="col-coord" style="font-family: monospace;">${latitude}</td>
+                        <td class="col-coord" style="font-family: monospace;">${longitude}</td>
+                        <td class="col-map">
+                            <div style="display: flex; gap: 8px; font-weight: bold;">
+                                <a href="${googleLink}" target="_blank" class="map-link">구글지도</a>
+                                <a href="${naverLink}" target="_blank" class="map-link">네이버지도</a>
+                            </div>
                         </td>
+                        <td class="col-address">${roadAddress}</td>
+                        <td class="col-address">${lotAddress}</td>
                     `;
                 } else {
                     tr.innerHTML = `
-                        <td><strong>${file.name}</strong></td>
+                        <td class="col-filename" title="${file.name}"><strong>${file.name}</strong></td>
                         <td colspan="5" class="error-text">GPS 메타데이터가 존재하지 않습니다.</td>
                     `;
                 }
             } catch (error) {
                 console.error(error);
                 tr.innerHTML = `
-                    <td><strong>${file.name}</strong></td>
+                    <td class="col-filename" title="${file.name}"><strong>${file.name}</strong></td>
                     <td colspan="5" class="error-text">파일 형식이 잘못되었거나 읽을 수 없습니다.</td>
                 `;
             }
