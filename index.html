@@ -323,10 +323,35 @@
         .fade-in {
             animation: fadeIn 0.4s ease forwards;
         }
+
+        /* v2 이동 버튼 */
+        .v2-link {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: var(--success-color);
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 1000;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .v2-link:hover {
+            background: var(--success-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
     </style>
 </head>
 
 <body>
+    <a href="https://ddpw1206-ai.github.io/exif-gps-extractor/EXIF-GPS-Extractor-v2.html" class="v2-link">ver2.1로 이동
+        →</a>
 
     <div class="main-container">
         <div class="header">
@@ -591,8 +616,8 @@
 
                     resultsData.push({
                         "파일명": file.name,
-                        "위도(Latitude, y)": latFixed,
-                        "경도(Longitude, x)": lngFixed,
+                        "위도(Latitude, y)": parseFloat(latitude),
+                        "경도(Longitude, x)": parseFloat(longitude),
                         "좌표 (Y, X)": `${latFixed}    ${lngFixed}`,
                         "구글지도": googleLink,
                         "네이버지도": naverLink,
