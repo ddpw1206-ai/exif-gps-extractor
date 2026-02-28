@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXIF GPS Extractor v2.0 - DB Management</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --danger: #dc2626;
+            --danger-hover: #b91c1c;
+            --success: #16a34a;
+            --border: #e5e7eb;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --bg-gray: #f9fafb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        /* 통계 대시보드 */
+        .stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-gray);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .stat-card.new .stat-value {
+            color: var(--success);
+        }
+
+        /* 파일 업로드 영역 */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: var(--bg-gray);
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 24px;
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .upload-hint {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* 테이블 컨트롤 */
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .table-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-hover);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 테이블 */
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: var(--bg-gray);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th.sortable:hover {
+            background: #e5e7eb;
+        }
+
+        th .sort-indicator {
+            margin-left: 4px;
+            font-size: 11px;
+            opacity: 0.5;
+        }
+
+        th.sorted .sort-indicator {
+            opacity: 1;
+        }
+
+        td {
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background: var(--bg-gray);
+        }
+
+        /* 체크박스 */
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        th.checkbox-col {
+            width: 50px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        td.checkbox-col {
+            text-align: center;
+        }
+
+        /* 컬럼 너비 (1920px 기준) */
+        th:nth-child(1) {
+            width: 50px;
+        }
+
+        /* 체크박스 */
+        th:nth-child(2) {
+            width: 60px;
+        }
+
+        /* No */
+        th:nth-child(3) {
+            width: 280px;
+        }
+
+        /* 파일명 */
+        th:nth-child(4) {
+            width: 120px;
+        }
+
+        /* 위도 */
+        th:nth-child(5) {
+            width: 120px;
+        }
+
+        /* 경도 */
+        th:nth-child(6) {
+            width: 280px;
+        }
+
+        /* 지번주소 */
+        th:nth-child(7) {
+            width: 280px;
+        }
+
+        /* 도로명주소 */
+        th:nth-child(8) {
+            width: 200px;
+        }
+
+        /* 지도보기 */
+        th:nth-child(9) {
+            width: 130px;
+        }
+
+        /* 등록일 */
+
+        .map-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .map-link:hover {
+            text-decoration: underline;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* 로딩 상태 */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        /* Export 버튼 */
+        .export-btn {
+            background: var(--success);
+            color: white;
+        }
+
+        .export-btn:hover {
+            background: #15803d;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>📸 EXIF GPS Extractor v2.0</h1>
+        <p class="subtitle">사진에서 GPS 정보를 추출하고 주소로 변환합니다 (IndexedDB 영구 저장)</p>
+
+        <!-- 통계 대시보드 -->
+        <div class="stats-dashboard">
+            <div class="stat-card">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">전체 추출 갯수</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="previousCount">0</div>
+                <div class="stat-label">추출 완료 갯수</div>
+            </div>
+            <div class="stat-card new">
+                <div class="stat-value" id="newCount">0</div>
+                <div class="stat-label">신규 추출 갯수</div>
+            </div>
+        </div>
+
+        <!-- 파일 업로드 -->
+        <div class="upload-area" id="uploadArea">
+            <input type="file" id="fileInput" accept="image/*" multiple>
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">클릭하거나 이미지를 드래그하세요</div>
+            <div class="upload-hint">여러 파일을 동시에 업로드할 수 있습니다 (JPG, PNG 등)</div>
+        </div>
+
+        <div class="loading" id="loading">처리 중...</div>
+
+        <!-- 테이블 컨트롤 -->
+        <div class="table-controls">
+            <div class="table-title">추출 결과</div>
+            <div class="button-group">
+                <button class="btn-danger" id="deleteSelectedBtn" disabled>선택 삭제</button>
+                <button class="btn-danger" id="deleteAllBtn" disabled>전체 삭제</button>
+                <button class="export-btn" id="exportBtn" disabled>CSV 내보내기</button>
+            </div>
+        </div>
+
+        <!-- 결과 테이블 -->
+        <div class="table-wrapper">
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th class="checkbox-col" id="selectAll">
+                            <input type="checkbox" id="selectAllCheckbox">
+                        </th>
+                        <th class="sortable" data-column="id">No <span class="sort-indicator">▼</span></th>
+                        <th class="sortable" data-column="filename">파일명 <span class="sort-indicator">▼</span></th>
+                        <th class="sortable" data-column="latitude">위도 <span class="sort-indicator">▼</span></th>
+                        <th class="sortable" data-column="longitude">경도 <span class="sort-indicator">▼</span></th>
+                        <th>지번주소</th>
+                        <th>도로명주소</th>
+                        <th>지도보기</th>
+                        <th class="sortable" data-column="timestamp">등록일 <span class="sort-indicator">▼</span></th>
+                    </tr>
+                </thead>
+                <tbody id="resultBody">
+                    <tr>
+                        <td colspan="9" class="no-data">추출된 데이터가 없습니다</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+    <script>
+        // IndexedDB 초기화
+        let db;
+        const DB_NAME = 'ExifGpsDB';
+        const STORE_NAME = 'gpsData';
+        const DB_VERSION = 1;
+
+        // DB 연결
+        const initDB = () => {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                        objectStore.createIndex('filename', 'filename', { unique: false });
+                        objectStore.createIndex('coordinates', ['latitude', 'longitude'], { unique: false });
+                        objectStore.createIndex('timestamp', 'timestamp', { unique: false });
+                    }
+                };
+            });
+        };
+
+        // 데이터 저장
+        const saveData = (data) => {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.add(data);
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        };
+
+        // 모든 데이터 가져오기
+        const getAllData = () => {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.getAll();
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        };
+
+        // 중복 체크 (파일명 + 좌표)
+        const isDuplicate = async (filename, latitude, longitude) => {
+            const allData = await getAllData();
+            return allData.some(item =>
+                item.filename === filename &&
+                Math.abs(item.latitude - latitude) < 0.000001 &&
+                Math.abs(item.longitude - longitude) < 0.000001
+            );
+        };
+
+        // 데이터 삭제
+        const deleteData = (id) => {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.delete(id);
+
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        };
+
+        // 모든 데이터 삭제
+        const deleteAllData = () => {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.clear();
+
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        };
+
+        // 전역 변수
+        let allData = [];
+        let sortColumn = 'id';
+        let sortDirection = 'desc';
+        let previousDataCount = 0;
+        let newDataCount = 0;
+
+        // DOM 요소
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const loading = document.getElementById('loading');
+        const resultBody = document.getElementById('resultBody');
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+        const deleteAllBtn = document.getElementById('deleteAllBtn');
+        const exportBtn = document.getElementById('exportBtn');
+
+        // 초기화
+        (async () => {
+            await initDB();
+            await loadData();
+        })();
+
+        // 데이터 로드
+        async function loadData() {
+            previousDataCount = allData.length;
+            allData = await getAllData();
+            updateStats();
+            renderTable();
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            document.getElementById('totalCount').textContent = allData.length;
+            document.getElementById('previousCount').textContent = previousDataCount;
+            document.getElementById('newCount').textContent = newDataCount;
+        }
+
+        // 파일 업로드 이벤트
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            await processFiles(files);
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            await processFiles(files);
+            fileInput.value = '';
+        });
+
+        // 파일 처리
+        async function processFiles(files) {
+            loading.classList.add('active');
+            newDataCount = 0;
+
+            for (const file of files) {
+                await processFile(file);
+            }
+
+            await loadData();
+            loading.classList.remove('active');
+        }
+
+        // 개별 파일 처리
+        function processFile(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+
+                reader.onload = async (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+
+                    img.onload = async () => {
+                        EXIF.getData(img, async function () {
+                            const lat = EXIF.getTag(this, "GPSLatitude");
+                            const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+                            const lon = EXIF.getTag(this, "GPSLongitude");
+                            const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
+
+                            if (lat && lon) {
+                                const latitude = convertDMSToDD(lat, latRef);
+                                const longitude = convertDMSToDD(lon, lonRef);
+
+                                // 중복 체크
+                                const duplicate = await isDuplicate(file.name, latitude, longitude);
+
+                                if (!duplicate) {
+                                    const addresses = await getAddresses(latitude, longitude);
+
+                                    const data = {
+                                        filename: file.name,
+                                        latitude: latitude,
+                                        longitude: longitude,
+                                        parcelAddress: addresses.parcel || '조회 실패',
+                                        roadAddress: addresses.road || '조회 실패',
+                                        timestamp: Date.now()
+                                    };
+
+                                    await saveData(data);
+                                    newDataCount++;
+                                }
+                            }
+                            resolve();
+                        });
+                    };
+                };
+
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // DMS to DD 변환
+        function convertDMSToDD(dms, ref) {
+            const degrees = dms[0];
+            const minutes = dms[1];
+            const seconds = dms[2];
+            let dd = degrees + minutes / 60 + seconds / 3600;
+            if (ref === "S" || ref === "W") dd = dd * -1;
+            return dd;
+        }
+
+        // Vworld API로 주소 조회
+        async function getAddresses(lat, lon) {
+            const apiKey = 'BA34C0F8-1FAD-3125-8F09-5491A0062CAB';
+            const url = `https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${lon},${lat}&format=json&type=both&zipcode=true&simple=false&key=${apiKey}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.response.status === 'OK' && data.response.result) {
+                    const result = data.response.result[0];
+                    return {
+                        parcel: result.parcel?.text || '정보 없음',
+                        road: result.structure?.text || '정보 없음'
+                    };
+                }
+            } catch (error) {
+                console.error('주소 조회 실패:', error);
+            }
+
+            return { parcel: '조회 실패', road: '조회 실패' };
+        }
+
+        // 테이블 렌더링
+        function renderTable() {
+            if (allData.length === 0) {
+                resultBody.innerHTML = '<tr><td colspan="9" class="no-data">추출된 데이터가 없습니다</td></tr>';
+                deleteAllBtn.disabled = true;
+                exportBtn.disabled = true;
+                return;
+            }
+
+            // 정렬
+            const sortedData = [...allData].sort((a, b) => {
+                let aVal = a[sortColumn];
+                let bVal = b[sortColumn];
+
+                if (sortColumn === 'timestamp') {
+                    return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+                }
+
+                if (typeof aVal === 'string') {
+                    return sortDirection === 'asc'
+                        ? aVal.localeCompare(bVal)
+                        : bVal.localeCompare(aVal);
+                }
+
+                return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+            });
+
+            resultBody.innerHTML = sortedData.map((item, index) => {
+                const date = new Date(item.timestamp);
+                const formattedDate = `${String(date.getFullYear()).slice(2)}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+                return `
+                    <tr>
+                        <td class="checkbox-col">
+                            <input type="checkbox" class="row-checkbox" data-id="${item.id}">
+                        </td>
+                        <td>${index + 1}</td>
+                        <td>${item.filename}</td>
+                        <td>${item.latitude.toFixed(6)}</td>
+                        <td>${item.longitude.toFixed(6)}</td>
+                        <td>${item.parcelAddress}</td>
+                        <td>${item.roadAddress}</td>
+                        <td>
+                            <a href="https://map.kakao.com/link/map/${item.latitude},${item.longitude}" target="_blank" class="map-link">카카오맵 →</a>
+                        </td>
+                        <td>${formattedDate}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            deleteAllBtn.disabled = false;
+            exportBtn.disabled = false;
+            updateDeleteButtonState();
+        }
+
+        // 전체 선택
+        selectAllCheckbox.addEventListener('change', (e) => {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = e.target.checked);
+            updateDeleteButtonState();
+        });
+
+        // 체크박스 상태 변경 시
+        document.addEventListener('change', (e) => {
+            if (e.target.classList.contains('row-checkbox')) {
+                updateDeleteButtonState();
+            }
+        });
+
+        // 삭제 버튼 상태 업데이트
+        function updateDeleteButtonState() {
+            const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+            deleteSelectedBtn.disabled = checkedCount === 0;
+        }
+
+        // 선택 삭제
+        deleteSelectedBtn.addEventListener('click', async () => {
+            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+            const ids = Array.from(checkedBoxes).map(cb => Number(cb.dataset.id));
+
+            if (confirm(`선택한 ${ids.length}개 항목을 삭제하시겠습니까?`)) {
+                loading.classList.add('active');
+                for (const id of ids) {
+                    await deleteData(id);
+                }
+                newDataCount = 0;
+                await loadData();
+                selectAllCheckbox.checked = false;
+                loading.classList.remove('active');
+            }
+        });
+
+        // 전체 삭제
+        deleteAllBtn.addEventListener('click', async () => {
+            if (confirm(`전체 ${allData.length}개 항목을 삭제하시겠습니까?`)) {
+                loading.classList.add('active');
+                await deleteAllData();
+                newDataCount = 0;
+                await loadData();
+                selectAllCheckbox.checked = false;
+                loading.classList.remove('active');
+            }
+        });
+
+        // CSV 내보내기
+        exportBtn.addEventListener('click', () => {
+            const headers = ['No', '파일명', '위도', '경도', '지번주소', '도로명주소', '등록일'];
+            const rows = allData.map((item, index) => {
+                const date = new Date(item.timestamp);
+                const formattedDate = `${String(date.getFullYear()).slice(2)}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+                return [
+                    index + 1,
+                    item.filename,
+                    item.latitude,
+                    item.longitude,
+                    item.parcelAddress,
+                    item.roadAddress,
+                    formattedDate
+                ];
+            });
+
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.join(','))
+            ].join('\n');
+
+            const BOM = '\uFEFF';
+            const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `exif-gps-data-${new Date().getTime()}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // 정렬 기능
+        document.querySelectorAll('.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                const column = th.dataset.column;
+
+                if (sortColumn === column) {
+                    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortColumn = column;
+                    sortDirection = 'asc';
+                }
+
+                // 정렬 표시 업데이트
+                document.querySelectorAll('.sortable').forEach(header => {
+                    header.classList.remove('sorted');
+                    const indicator = header.querySelector('.sort-indicator');
+                    indicator.textContent = '▼';
+                });
+
+                th.classList.add('sorted');
+                const indicator = th.querySelector('.sort-indicator');
+                indicator.textContent = sortDirection === 'asc' ? '▲' : '▼';
+
+                renderTable();
+            });
+        });
+    </script>
+</body>
+
+</html>
