@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EXIF Geo Extractor</title>
+    <title>JPG to EXIF Geo Extractor</title>
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -279,8 +279,12 @@
 
     <div class="main-container">
         <div class="header">
-            <h1>EXIF Geo Extractor</h1>
-            <p>이미지의 메타데이터에서 GPS 좌표를 추출하고 도로명/지번 주소로 변환합니다</p>
+            <h1>JPG to EXIF Geo Extractor</h1>
+            <p>이미지의 메타데이터에서 GPS 좌표를 추출하고 도로명/지번 주소로 변환합니다.</p>
+            <p></p>
+            <p>반드시 촬영시 GPS 값을 포함한 사진이어야 하며, GPS 값이 포함되지 않은 사진은 변환되지 않습니다.</p>
+            <p>아이폰 설정 방법: 설정 앱 → 개인정보 보호 및 보안 → 위치 서비스 ON </p>
+            <p>갤럭시 설정 방법: 설정 → 위치 → ON, 카메라 앱 실행 → "위치 태그" 또는 "GPS 태그" 옵션 활성화 </p>
         </div>
 
         <div class="card upload-card" id="dropArea">
@@ -331,7 +335,7 @@
                             <th>경도 (Lng)</th>
                             <th>도로명주소</th>
                             <th>지번주소</th>
-                            <th>구글맵</th>
+                            <th>네이버지도</th>
                         </tr>
                     </thead>
                     <tbody id="resultsBody">
@@ -465,28 +469,27 @@
                     let roadAddress = "-";
                     let lotAddress = "-";
 
-                    // 카카오 로컬 API: 리버스 지오코딩 (좌표 -> 주소)
+                    // Nominatim(OpenStreetMap) 무료 API: 리버스 지오코딩 (좌표 -> 주소)
                     try {
-                        const KAKAO_API_KEY = "c054c99f73765562d124cc8b766c755f";
-                        const response = await fetch(`https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${longitude}&y=${latitude}`, {
+                        const targetUrl = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=ko`;
+                        const response = await fetch(targetUrl, {
                             method: 'GET',
                             headers: {
-                                'Authorization': `KakaoAK ${KAKAO_API_KEY}`
+                                'User-Agent': 'exif-gps-extractor/1.0'
                             }
                         });
                         const resData = await response.json();
-                        if (resData.documents && resData.documents.length > 0) {
-                            const doc = resData.documents[0];
-                            if (doc.road_address) roadAddress = doc.road_address.address_name;
-                            if (doc.address) lotAddress = doc.address.address_name;
+                        if (resData && resData.display_name) {
+                            roadAddress = resData.display_name;
+                            lotAddress = "-";
                         }
                     } catch (err) {
-                        console.error("Kakao API 연결 오류:", err);
+                        console.error("Nominatim API 연결 오류:", err);
                         roadAddress = "조회 실패";
                         lotAddress = "조회 실패";
                     }
 
-                    const mapLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+                    const mapLink = `https://map.naver.com/v5/?c=${longitude},${latitude},15,0,0,0,dh`;
 
                     // 데이터 배열에 푸시 (Excel, CSV 다운로드 용도)
                     resultsData.push({
@@ -495,7 +498,7 @@
                         "경도": parseFloat(longitude),
                         "도로명주소": roadAddress,
                         "지번주소": lotAddress,
-                        "구글맵": mapLink
+                        "네이버지도": mapLink
                     });
 
                     tr.innerHTML = `
@@ -506,7 +509,7 @@
                         <td>${lotAddress}</td>
                         <td>
                             <a href="${mapLink}" target="_blank" class="map-link">
-                                지도 보기
+                                네이버지도
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                             </a>
                         </td>
