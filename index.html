@@ -379,21 +379,24 @@
                     </button>
                 </div>
             </div>
+            <div style="text-align: right; font-size: 12px; color: #888; margin-bottom: 8px;">
+                * 도로명 주소는 GPS 소수점 5자리 기준으로 검색하여 추정
+            </div>
             <div class="table-responsive">
                 <table id="resultsTable">
                     <thead>
                         <tr>
                             <th class="col-filename">파일명</th>
-                            <th class="col-coord">경도<br><span
-                                    style="font-size: 10px; font-weight: normal; letter-spacing: 0; color: #888;">(Longitude,
-                                    X)</span></th>
                             <th class="col-coord">위도<br><span
                                     style="font-size: 10px; font-weight: normal; letter-spacing: 0; color: #888;">(Latitude,
                                     Y)</span></th>
+                            <th class="col-coord">경도<br><span
+                                    style="font-size: 10px; font-weight: normal; letter-spacing: 0; color: #888;">(Longitude,
+                                    X)</span></th>
                             <th class="col-xy">좌표 (Y,X)</th>
                             <th class="col-map">지도 링크</th>
                             <th class="col-address">지번주소</th>
-                            <th class="col-address">도로명주소</th>
+                            <th class="col-address">도로명주소 (추정)</th>
                         </tr>
                     </thead>
                     <tbody id="resultsBody">
@@ -570,6 +573,15 @@
                     let roadAddress = addrInfo.road;
                     let lotAddress = addrInfo.parcel;
 
+                    if (roadAddress === '-') {
+                        const lat5 = parseFloat(latitude).toFixed(5);
+                        const lng5 = parseFloat(longitude).toFixed(5);
+                        const addrInfo5 = await getVworldAddress(lat5, lng5);
+                        if (addrInfo5.road !== '-') {
+                            roadAddress = addrInfo5.road;
+                        }
+                    }
+
                     const naverLink = `https://map.naver.com/p/search/${parseFloat(latitude)}%2C${parseFloat(longitude)}`;
                     const googleLink = `https://www.google.com/maps?q=${latitude},${longitude}&ll=${latitude},${longitude}&z=17`;
 
@@ -579,19 +591,19 @@
 
                     resultsData.push({
                         "파일명": file.name,
-                        "경도(Longitude, x)": parseFloat(longitude),
                         "위도(Latitude, y)": parseFloat(latitude),
+                        "경도(Longitude, x)": parseFloat(longitude),
                         "좌표 (Y, X)": `${latFixed}    ${lngFixed}`,
                         "구글지도": googleLink,
                         "네이버지도": naverLink,
                         "지번주소": lotAddress,
-                        "도로명주소": roadAddress
+                        "도로명주소 (추정)": roadAddress
                     });
 
                     tr.innerHTML = `
                         <td class="col-filename" title="${file.name}"><strong>${file.name}</strong></td>
-                        <td class="col-coord">${lngFixed}</td>
                         <td class="col-coord">${latFixed}</td>
+                        <td class="col-coord">${lngFixed}</td>
                         <td class="col-xy">${latFixed}&nbsp;&nbsp;&nbsp;&nbsp;${lngFixed}</td>
                         <td class="col-map">
                             <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
