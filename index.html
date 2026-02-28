@@ -350,282 +350,304 @@
 </head>
 
 <body>
-    <a href="https://ddpw1206-ai.github.io/exif-gps-extractor/EXIF-GPS-Extractor-v2.html" class="v2-link">ver2.1로 이동
-        →</a>
-
-    <div class="main-container">
-        <div class="header">
-            <h1>JPG to EXIF Geo Extractor</h1>
-            <p>이미지의 메타데이터에서 GPS 좌표를 추출하고 도로명/지번 주소로 변환합니다.</p>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;">📌 GPS 정보가 포함된 사진만 변환됩니다.</p>
-            <div class="guide-lines">
-                <div>📱 <strong>아이폰</strong>: 설정 앱 → 개인정보 보호 및 보안 → 위치 서비스 ON</div>
-                <div style="margin-top: 4px;">📷 <strong>갤럭시</strong>: 설정 → 위치 → ON, 카메라 앱 → "위치 태그" 또는 "GPS 태그" 활성화
-                </div>
-            </div>
-        </div>
-
-        <div class="card upload-card" id="dropArea">
-            <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="56" height="56">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-            </svg>
-            <div class="upload-text">이미지 파일을 이곳으로 드래그 앤 드롭 하세요</div>
-            <div class="upload-subtext">또는 버튼을 클릭하여 선택 (다중 선택 가능)</div>
-            <button class="btn" onclick="document.getElementById('fileInput').click(); event.stopPropagation();">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                파일 찾아보기
-            </button>
-            <input type="file" id="fileInput" multiple accept="image/jpeg, image/jpg, image/png, image/webp"
-                style="display: none;">
-        </div>
-
-        <div class="card results-card" id="resultsContainer" style="display: none;">
-            <div class="results-header">
-                <h2>추출 결과</h2>
-                <div class="actions">
-                    <button class="btn btn-outline" onclick="exportCSV()">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                            </path>
-                        </svg>
-                        CSV 다운로드
-                    </button>
-                    <button class="btn btn-green" onclick="exportExcel()">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                            </path>
-                        </svg>
-                        Excel 다운로드
-                    </button>
-                </div>
-            </div>
-            <div style="text-align: right; font-size: 12px; color: #888; margin-bottom: 8px;">
-                * 도로명 주소는 GPS 소수점 5자리 기준으로 검색하여 추정
-            </div>
-            <div class="table-responsive">
-                <table id="resultsTable">
-                    <thead>
-                        <tr>
-                            <th class="col-filename">파일명</th>
-                            <th class="col-coord">위도<br><span
-                                    style="font-size: 10px; font-weight: normal; letter-spacing: 0; color: #888;">(Latitude,
-                                    Y)</span></th>
-                            <th class="col-coord">경도<br><span
-                                    style="font-size: 10px; font-weight: normal; letter-spacing: 0; color: #888;">(Longitude,
-                                    X)</span></th>
-                            <th class="col-xy">좌표 (Y,X)</th>
-                            <th class="col-map">지도 링크</th>
-                            <th class="col-address">지번주소</th>
-                            <th class="col-address">도로명주소 (추정)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="resultsBody">
-                        <!-- 동적으로 결과가 추가됩니다 -->
-                    </tbody>
-                </table>
-            </div>
+    <div id="loginScreen"
+        style="display:flex; justify-content:center; align-items:center; height:100vh; background:#f1f5f9;">
+        <div
+            style="background:white; padding:40px; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,0.1); width:360px;">
+            <h2 style="margin-bottom:24px; text-align:center;">EXIF GPS Extractor v1</h2>
+            <input id="loginEmail" type="email" placeholder="이메일"
+                style="width:100%; padding:10px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
+            <input id="loginPassword" type="password" placeholder="비밀번호"
+                style="width:100%; padding:10px; margin-bottom:8px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
+            <p id="loginError" style="color:red; font-size:13px; margin-bottom:8px; min-height:18px;"></p>
+            <button id="loginBtn"
+                style="width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer;">로그인</button>
+            <p style="text-align:center; margin-top:12px;"><a id="resetPasswordLink" href="#"
+                    style="font-size:13px; color:#64748b;">비밀번호를 잊으셨나요?</a></p>
+            <p style="text-align:center; margin-top:12px; color:#64748b; font-size:11px;">Ver.1.2</p>
         </div>
     </div>
 
-    <script>
-        const dropArea = document.getElementById('dropArea');
-        const fileInput = document.getElementById('fileInput');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const resultsBody = document.getElementById('resultsBody');
+    <div id="mainApp" style="display:none">
+        <button id="logoutBtn"
+            style="position:fixed; top:20px; right:140px; background:white; color:#dc2626; border:1px solid #fca5a5; border-radius:10px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.1);">로그아웃</button>
+        <a href="https://ddpw1206-ai.github.io/exif-gps-extractor/EXIF-GPS-Extractor-v2.html" class="v2-link">ver2.2로 이동
+            →</a>
 
-        // 다운로드를 위한 결과 데이터 저장 배열
-        let resultsData = [];
+        <div class="main-container">
+            <div class="header">
+                <h1>JPG to EXIF Geo Extractor</h1>
+                <p>이미지의 메타데이터에서 GPS 좌표를 추출하고 도로명/지번 주소로 변환합니다.</p>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;">📌 GPS 정보가 포함된 사진만 변환됩니다.
+                </p>
+                <div class="guide-lines">
+                    <div>📱 <strong>아이폰</strong>: 설정 앱 → 개인정보 보호 및 보안 → 위치 서비스 ON</div>
+                    <div style="margin-top: 4px;">📷 <strong>갤럭시</strong>: 설정 → 위치 → ON, 카메라 앱 → "위치 태그" 또는 "GPS 태그" 활성화
+                    </div>
+                </div>
+            </div>
 
-        // 드래그 앤 드롭 이벤트 방지 및 처리
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, preventDefaults, false);
-            document.body.addEventListener(eventName, preventDefaults, false);
-        });
+            <div class="card upload-card" id="dropArea">
+                <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="56" height="56">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                <div class="upload-text">이미지 파일을 이곳으로 드래그 앤 드롭 하세요</div>
+                <div class="upload-subtext">또는 버튼을 클릭하여 선택 (다중 선택 가능)</div>
+                <button class="btn" onclick="document.getElementById('fileInput').click(); event.stopPropagation();">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    파일 찾아보기
+                </button>
+                <input type="file" id="fileInput" multiple accept="image/jpeg, image/jpg, image/png, image/webp"
+                    style="display: none;">
+            </div>
 
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
+            <div class="card results-card" id="resultsContainer" style="display: none;">
+                <div class="results-header">
+                    <h2>추출 결과</h2>
+                    <div class="actions">
+                        <button class="btn btn-outline" onclick="exportCSV()">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            CSV 다운로드
+                        </button>
+                        <button class="btn btn-green" onclick="exportExcel()">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            Excel 다운로드
+                        </button>
+                    </div>
+                </div>
+                <div style="text-align: right; font-size: 12px; color: #888; margin-bottom: 8px;">
+                    * 도로명 주소는 GPS 소수점 5자리 기준으로 검색하여 추정
+                </div>
+                <div class="table-responsive">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th class="col-filename">파일명</th>
+                                <th class="col-coord">위도<br><span
+                                        style="font-size: 10px; font-weight: normal; letter-spacing: 0; color: #888;">(Latitude,
+                                        Y)</span></th>
+                                <th class="col-coord">경도<br><span
+                                        style="font-size: 10px; font-weight: normal; letter-spacing: 0; color: #888;">(Longitude,
+                                        X)</span></th>
+                                <th class="col-xy">좌표 (Y,X)</th>
+                                <th class="col-map">지도 링크</th>
+                                <th class="col-address">지번주소</th>
+                                <th class="col-address">도로명주소 (추정)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                            <!-- 동적으로 결과가 추가됩니다 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false);
-        });
+        <script>
+            const dropArea = document.getElementById('dropArea');
+            const fileInput = document.getElementById('fileInput');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsBody = document.getElementById('resultsBody');
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
-        });
+            // 다운로드를 위한 결과 데이터 저장 배열
+            let resultsData = [];
 
-        dropArea.addEventListener('drop', handleDrop, false);
-        dropArea.addEventListener('click', () => fileInput.click());
+            // 드래그 앤 드롭 이벤트 방지 및 처리
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
 
-        fileInput.addEventListener('change', function () {
-            handleFiles(this.files);
-        });
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            handleFiles(files);
-        }
-
-        function handleFiles(files) {
-            if (files.length > 0) {
-                resultsContainer.style.display = 'block';
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
             }
-            ([...files]).forEach(processFile);
-            fileInput.value = ''; // 같은 파일을 다시 선택할 수 있도록 초기화
-        }
 
-        // DMS 배열을 십진수(Decimal)로 변환하는 함수
-        function convertDMSToDecimal(dmsArray, ref) {
-            try {
-                if (!dmsArray) return null;
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false);
+            });
 
-                let deg, min, sec;
-                const getValue = (val) => {
-                    if (Array.isArray(val)) return val[0] / val[1];
-                    if (typeof val === 'number') return val;
-                    if (val && typeof val.numerator !== 'undefined') return val.numerator / val.denominator;
-                    return 0;
-                };
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
+            });
 
-                if (Array.isArray(dmsArray) && dmsArray.length >= 3) {
-                    deg = getValue(dmsArray[0]);
-                    min = getValue(dmsArray[1]);
-                    sec = getValue(dmsArray[2]);
-                } else {
+            dropArea.addEventListener('drop', handleDrop, false);
+            dropArea.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', function () {
+                handleFiles(this.files);
+            });
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+
+            function handleFiles(files) {
+                if (files.length > 0) {
+                    resultsContainer.style.display = 'block';
+                }
+                ([...files]).forEach(processFile);
+                fileInput.value = ''; // 같은 파일을 다시 선택할 수 있도록 초기화
+            }
+
+            // DMS 배열을 십진수(Decimal)로 변환하는 함수
+            function convertDMSToDecimal(dmsArray, ref) {
+                try {
+                    if (!dmsArray) return null;
+
+                    let deg, min, sec;
+                    const getValue = (val) => {
+                        if (Array.isArray(val)) return val[0] / val[1];
+                        if (typeof val === 'number') return val;
+                        if (val && typeof val.numerator !== 'undefined') return val.numerator / val.denominator;
+                        return 0;
+                    };
+
+                    if (Array.isArray(dmsArray) && dmsArray.length >= 3) {
+                        deg = getValue(dmsArray[0]);
+                        min = getValue(dmsArray[1]);
+                        sec = getValue(dmsArray[2]);
+                    } else {
+                        return null;
+                    }
+
+                    let decimal = deg + (min / 60) + (sec / 3600);
+                    if (ref === 'S' || ref === 'W') decimal = decimal * -1;
+
+                    return decimal.toFixed(6);
+                } catch (error) {
                     return null;
                 }
-
-                let decimal = deg + (min / 60) + (sec / 3600);
-                if (ref === 'S' || ref === 'W') decimal = decimal * -1;
-
-                return decimal.toFixed(6);
-            } catch (error) {
-                return null;
             }
-        }
 
-        function getRef(tag, defaultRef) {
-            if (!tag) return defaultRef;
-            if (Array.isArray(tag.value) && typeof tag.value[0] === 'string') return tag.value[0].charAt(0).toUpperCase();
-            if (typeof tag.value === 'string') return tag.value.charAt(0).toUpperCase();
-            if (typeof tag.description === 'string') return tag.description.charAt(0).toUpperCase();
-            return defaultRef;
-        }
+            function getRef(tag, defaultRef) {
+                if (!tag) return defaultRef;
+                if (Array.isArray(tag.value) && typeof tag.value[0] === 'string') return tag.value[0].charAt(0).toUpperCase();
+                if (typeof tag.value === 'string') return tag.value.charAt(0).toUpperCase();
+                if (typeof tag.description === 'string') return tag.description.charAt(0).toUpperCase();
+                return defaultRef;
+            }
 
-        function getVworldAddress(lat, lng) {
-            return new Promise((resolve) => {
-                const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-                const script = document.createElement('script');
+            function getVworldAddress(lat, lng) {
+                return new Promise((resolve) => {
+                    const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+                    const script = document.createElement('script');
 
-                script.src = `https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${lng},${lat}&format=json&type=both&zipcode=true&simple=false&key=1093C6FE-9827-3C31-ADD5-20298B8AD1A1&callback=${cbName}`;
+                    script.src = `https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${lng},${lat}&format=json&type=both&zipcode=true&simple=false&key=1093C6FE-9827-3C31-ADD5-20298B8AD1A1&callback=${cbName}`;
 
-                const timer = setTimeout(() => {
-                    cleanup();
-                    resolve({ road: '-', parcel: '-' });
-                }, 5000);
+                    const timer = setTimeout(() => {
+                        cleanup();
+                        resolve({ road: '-', parcel: '-' });
+                    }, 5000);
 
-                window[cbName] = function (data) {
-                    clearTimeout(timer);
-                    cleanup();
+                    window[cbName] = function (data) {
+                        clearTimeout(timer);
+                        cleanup();
 
-                    console.log('Vworld 응답:', JSON.stringify(data));
+                        console.log('Vworld 응답:', JSON.stringify(data));
 
-                    const result = data?.response?.result;
-                    const road = result?.find(r => r.type?.toUpperCase() === 'ROAD')?.text || '-';
-                    const parcel = result?.find(r => r.type?.toUpperCase() === 'PARCEL')?.text || '-';
+                        const result = data?.response?.result;
+                        const road = result?.find(r => r.type?.toUpperCase() === 'ROAD')?.text || '-';
+                        const parcel = result?.find(r => r.type?.toUpperCase() === 'PARCEL')?.text || '-';
 
-                    console.log('도로명:', road, '/ 지번:', parcel);
-                    resolve({ road, parcel });
-                };
+                        console.log('도로명:', road, '/ 지번:', parcel);
+                        resolve({ road, parcel });
+                    };
 
-                script.onerror = function () {
-                    clearTimeout(timer);
-                    cleanup();
-                    resolve({ road: '-', parcel: '-' });
-                };
+                    script.onerror = function () {
+                        clearTimeout(timer);
+                        cleanup();
+                        resolve({ road: '-', parcel: '-' });
+                    };
 
-                function cleanup() {
-                    delete window[cbName];
-                    if (script.parentNode) script.parentNode.removeChild(script);
-                }
+                    function cleanup() {
+                        delete window[cbName];
+                        if (script.parentNode) script.parentNode.removeChild(script);
+                    }
 
-                document.head.appendChild(script);
-            });
-        }
+                    document.head.appendChild(script);
+                });
+            }
 
-        async function processFile(file) {
-            const tr = document.createElement('tr');
-            tr.className = 'fade-in';
-            tr.innerHTML = `
+            async function processFile(file) {
+                const tr = document.createElement('tr');
+                tr.className = 'fade-in';
+                tr.innerHTML = `
                 <td class="col-filename" title="${file.name}"><strong>${file.name}</strong></td>
                 <td colspan="6" class="status-text">데이터 추출 중...</td>
             `;
-            resultsBody.appendChild(tr);
+                resultsBody.appendChild(tr);
 
-            try {
-                const tags = await ExifReader.load(file);
+                try {
+                    const tags = await ExifReader.load(file);
 
-                let latitude = null;
-                let longitude = null;
+                    let latitude = null;
+                    let longitude = null;
 
-                if (tags['GPSLatitude'] && tags['GPSLongitude']) {
-                    const latDMS = tags['GPSLatitude'].value;
-                    const lonDMS = tags['GPSLongitude'].value;
-                    const latRef = getRef(tags['GPSLatitudeRef'], 'N');
-                    const lonRef = getRef(tags['GPSLongitudeRef'], 'E');
+                    if (tags['GPSLatitude'] && tags['GPSLongitude']) {
+                        const latDMS = tags['GPSLatitude'].value;
+                        const lonDMS = tags['GPSLongitude'].value;
+                        const latRef = getRef(tags['GPSLatitudeRef'], 'N');
+                        const lonRef = getRef(tags['GPSLongitudeRef'], 'E');
 
-                    latitude = convertDMSToDecimal(latDMS, latRef);
-                    longitude = convertDMSToDecimal(lonDMS, lonRef);
+                        latitude = convertDMSToDecimal(latDMS, latRef);
+                        longitude = convertDMSToDecimal(lonDMS, lonRef);
 
-                    if (latitude === null || isNaN(latitude)) {
-                        latitude = typeof tags['GPSLatitude'].description === 'number' ? tags['GPSLatitude'].description.toFixed(6) : tags['GPSLatitude'].description;
-                    }
-                    if (longitude === null || isNaN(longitude)) {
-                        longitude = typeof tags['GPSLongitude'].description === 'number' ? tags['GPSLongitude'].description.toFixed(6) : tags['GPSLongitude'].description;
-                    }
-                }
-
-                if (latitude && longitude) {
-                    // Vworld 주소 API: 리버스 지오코딩 (좌표 -> 주소) (JSONP 방식)
-                    const addrInfo = await getVworldAddress(latitude, longitude);
-                    let roadAddress = addrInfo.road;
-                    let lotAddress = addrInfo.parcel;
-
-                    if (roadAddress === '-') {
-                        const lat5 = parseFloat(latitude).toFixed(5);
-                        const lng5 = parseFloat(longitude).toFixed(5);
-                        const addrInfo5 = await getVworldAddress(lat5, lng5);
-                        if (addrInfo5.road !== '-') {
-                            roadAddress = addrInfo5.road;
+                        if (latitude === null || isNaN(latitude)) {
+                            latitude = typeof tags['GPSLatitude'].description === 'number' ? tags['GPSLatitude'].description.toFixed(6) : tags['GPSLatitude'].description;
+                        }
+                        if (longitude === null || isNaN(longitude)) {
+                            longitude = typeof tags['GPSLongitude'].description === 'number' ? tags['GPSLongitude'].description.toFixed(6) : tags['GPSLongitude'].description;
                         }
                     }
 
-                    const naverLink = `https://map.naver.com/p/search/${parseFloat(latitude)}%2C${parseFloat(longitude)}`;
-                    const googleLink = `https://www.google.com/maps?q=${latitude},${longitude}&ll=${latitude},${longitude}&z=17`;
+                    if (latitude && longitude) {
+                        // Vworld 주소 API: 리버스 지오코딩 (좌표 -> 주소) (JSONP 방식)
+                        const addrInfo = await getVworldAddress(latitude, longitude);
+                        let roadAddress = addrInfo.road;
+                        let lotAddress = addrInfo.parcel;
 
-                    // 데이터 배열에 푸시 (Excel, CSV 다운로드 용도)
-                    const latFixed = parseFloat(latitude).toFixed(6);
-                    const lngFixed = parseFloat(longitude).toFixed(6);
+                        if (roadAddress === '-') {
+                            const lat5 = parseFloat(latitude).toFixed(5);
+                            const lng5 = parseFloat(longitude).toFixed(5);
+                            const addrInfo5 = await getVworldAddress(lat5, lng5);
+                            if (addrInfo5.road !== '-') {
+                                roadAddress = addrInfo5.road;
+                            }
+                        }
 
-                    resultsData.push({
-                        "파일명": file.name,
-                        "위도(Latitude, y)": parseFloat(latitude),
-                        "경도(Longitude, x)": parseFloat(longitude),
-                        "좌표 (Y, X)": `${latFixed}    ${lngFixed}`,
-                        "구글지도": googleLink,
-                        "네이버지도": naverLink,
-                        "지번주소": lotAddress,
-                        "도로명주소 (추정)": roadAddress
-                    });
+                        const naverLink = `https://map.naver.com/p/search/${parseFloat(latitude)}%2C${parseFloat(longitude)}`;
+                        const googleLink = `https://www.google.com/maps?q=${latitude},${longitude}&ll=${latitude},${longitude}&z=17`;
 
-                    tr.innerHTML = `
+                        // 데이터 배열에 푸시 (Excel, CSV 다운로드 용도)
+                        const latFixed = parseFloat(latitude).toFixed(6);
+                        const lngFixed = parseFloat(longitude).toFixed(6);
+
+                        resultsData.push({
+                            "파일명": file.name,
+                            "위도(Latitude, y)": parseFloat(latitude),
+                            "경도(Longitude, x)": parseFloat(longitude),
+                            "좌표 (Y, X)": `${latFixed}    ${lngFixed}`,
+                            "구글지도": googleLink,
+                            "네이버지도": naverLink,
+                            "지번주소": lotAddress,
+                            "도로명주소 (추정)": roadAddress
+                        });
+
+                        tr.innerHTML = `
                         <td class="col-filename" title="${file.name}"><strong>${file.name}</strong></td>
                         <td class="col-coord">${latFixed}</td>
                         <td class="col-coord">${lngFixed}</td>
@@ -643,52 +665,105 @@
                         <td class="col-address">${lotAddress}</td>
                         <td class="col-address">${roadAddress}</td>
                     `;
-                } else {
-                    tr.innerHTML = `
+                    } else {
+                        tr.innerHTML = `
                         <td class="col-filename" title="${file.name}"><strong>${file.name}</strong></td>
                         <td colspan="6" class="error-text">GPS 메타데이터가 존재하지 않습니다.</td>
                     `;
-                }
-            } catch (error) {
-                console.error(error);
-                tr.innerHTML = `
+                    }
+                } catch (error) {
+                    console.error(error);
+                    tr.innerHTML = `
                     <td class="col-filename" title="${file.name}"><strong>${file.name}</strong></td>
                     <td colspan="6" class="error-text">파일 형식이 잘못되었거나 읽을 수 없습니다.</td>
                 `;
+                }
             }
-        }
 
-        // SheetJS (XLSX) 내보내기 로직
-        function exportExcel() {
-            if (resultsData.length === 0) {
-                alert("다운로드할 데이터가 없습니다.");
-                return;
+            // SheetJS (XLSX) 내보내기 로직
+            function exportExcel() {
+                if (resultsData.length === 0) {
+                    alert("다운로드할 데이터가 없습니다.");
+                    return;
+                }
+                const ws = XLSX.utils.json_to_sheet(resultsData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "GPS_Data");
+                XLSX.writeFile(wb, "gps_extractor_results.xlsx");
             }
-            const ws = XLSX.utils.json_to_sheet(resultsData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "GPS_Data");
-            XLSX.writeFile(wb, "gps_extractor_results.xlsx");
-        }
 
-        function exportCSV() {
-            if (resultsData.length === 0) {
-                alert("다운로드할 데이터가 없습니다.");
-                return;
+            function exportCSV() {
+                if (resultsData.length === 0) {
+                    alert("다운로드할 데이터가 없습니다.");
+                    return;
+                }
+                const ws = XLSX.utils.json_to_sheet(resultsData);
+                const csv = XLSX.utils.sheet_to_csv(ws, { FS: "," });
+
+                // 한글 깨짐 방지를 위한 BOM 추가
+                const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "gps_extractor_results.csv";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             }
-            const ws = XLSX.utils.json_to_sheet(resultsData);
-            const csv = XLSX.utils.sheet_to_csv(ws, { FS: "," });
+        </script>
+    </div>
 
-            // 한글 깨짐 방지를 위한 BOM 추가
-            const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "gps_extractor_results.csv";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcvpXffoH-KCatWIAfnHHPmnAMjVl-h4E",
+            authDomain: "exif-gps-extractor.firebaseapp.com",
+            projectId: "exif-gps-extractor",
+            storageBucket: "exif-gps-extractor.firebasestorage.app",
+            messagingSenderId: "254830598543",
+            appId: "1:254830598543:web:9920413f58608627cf13fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // 로그인 상태 감지
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+            } else {
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'none';
+            }
+        });
+
+        // 로그인
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (e) {
+                document.getElementById('loginError').textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
+            }
+        });
+
+        // 로그아웃
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // 비밀번호 재설정
+        document.getElementById('resetPasswordLink').addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value;
+            if (!email) { alert('이메일을 입력해주세요.'); return; }
+            await sendPasswordResetEmail(auth, email);
+            alert('비밀번호 재설정 이메일을 발송했습니다.');
+        });
     </script>
 </body>
 
