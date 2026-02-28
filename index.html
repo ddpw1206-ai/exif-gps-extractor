@@ -262,9 +262,8 @@
         }
 
         .col-address {
-            white-space: normal;
-            word-break: keep-all;
-            min-width: 120px;
+            white-space: nowrap;
+            min-width: 250px;
         }
 
         .col-map {
@@ -276,11 +275,15 @@
         .col-coord {
             white-space: nowrap;
             text-align: center;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
         }
 
         .col-xy {
             white-space: nowrap;
             text-align: center;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
         }
 
         .map-link {
@@ -381,9 +384,15 @@
                     <thead>
                         <tr>
                             <th class="col-filename">파일명</th>
-                            <th class="col-coord">경도(Longitude, x)</th>
-                            <th class="col-coord">위도(Latitude, y)</th>
-                            <th class="col-xy">좌표 (x, y)</th>
+                            <th class="col-coord">경도<br><span
+                                    style="font-size: 10px; font-weight: normal; letter-spacing: 0; color: #888;">(Longitude,
+                                    X)</span></th>
+                            <th class="col-coord">위도<br><span
+                                    style="font-size: 10px; font-weight: normal; letter-spacing: 0; color: #888;">(Latitude,
+                                    Y)</span></th>
+                            <th class="col-xy">좌표<br><span
+                                    style="font-size: 10px; font-weight: normal; letter-spacing: 0; color: #888;">(X,
+                                    Y)</span></th>
                             <th class="col-map">지도 링크</th>
                             <th class="col-address">도로명주소</th>
                             <th class="col-address">지번주소</th>
@@ -606,9 +615,13 @@
                         <td class="col-coord">${latFixed}</td>
                         <td class="col-xy">${lngFixed}&nbsp;&nbsp;&nbsp;&nbsp;${latFixed}</td>
                         <td class="col-map">
-                            <div style="display: flex; gap: 8px; font-weight: bold;">
-                                <a href="${googleLink}" target="_blank" class="map-link">구글지도</a>
-                                <a href="${naverLink}" target="_blank" class="map-link">네이버지도</a>
+                            <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
+                                <a href="${googleLink}" target="_blank" class="map-link" title="구글지도">
+                                    <img src="https://www.google.com/favicon.ico" alt="G" width="20" height="20" style="border-radius: 50%;">
+                                </a>
+                                <a href="${naverLink}" target="_blank" class="map-link" title="네이버지도" style="text-decoration: none;">
+                                    <div style="width: 20px; height: 20px; background-color: #03c75a; color: white; display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 14px; border-radius: 4px; font-family: Arial, sans-serif;">N</div>
+                                </a>
                             </div>
                         </td>
                         <td class="col-address">${roadAddress}</td>
