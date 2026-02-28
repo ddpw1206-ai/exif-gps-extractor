@@ -270,10 +270,17 @@
         .col-map {
             min-width: 90px;
             white-space: nowrap;
+            text-align: center;
         }
 
         .col-coord {
             white-space: nowrap;
+            text-align: center;
+        }
+
+        .col-xy {
+            white-space: nowrap;
+            text-align: center;
         }
 
         .map-link {
@@ -374,8 +381,9 @@
                     <thead>
                         <tr>
                             <th class="col-filename">파일명</th>
-                            <th class="col-coord">위도 (Lat)</th>
-                            <th class="col-coord">경도 (Lng)</th>
+                            <th class="col-coord">경도(Longitude, x)</th>
+                            <th class="col-coord">위도(Latitude, y)</th>
+                            <th class="col-xy">좌표 (x, y)</th>
                             <th class="col-map">지도 링크</th>
                             <th class="col-address">도로명주소</th>
                             <th class="col-address">지번주소</th>
@@ -485,10 +493,26 @@
                 window[callbackName] = function (data) {
                     document.head.removeChild(script);
                     delete window[callbackName];
+                    console.log('Vworld 응답:', JSON.stringify(data)); // 디버그용
+
                     const result = data.response?.result;
+
+                    // 방법1: type으로 찾기
+                    let road = result?.find(r => r.type === 'road')?.text;
+                    let parcel = result?.find(r => r.type === 'parcel')?.text;
+
+                    // 방법2: 인덱스로 직접 접근 (백업)
+                    if (!road) road = result?.[0]?.text;
+                    if (!parcel) parcel = result?.[1]?.text;
+
+                    const roadAddress = road || '-';
+                    const parcelAddress = parcel || '-';
+
+                    console.log('도로명:', roadAddress, '지번:', parcelAddress); // 디버그용
+
                     resolve({
-                        road: result?.find(r => r.type === 'road')?.text || '-',
-                        parcel: result?.find(r => r.type === 'parcel')?.text || '-'
+                        road: roadAddress,
+                        parcel: parcelAddress
                     });
                 };
 
@@ -516,7 +540,7 @@
             tr.className = 'fade-in';
             tr.innerHTML = `
                 <td class="col-filename" title="${file.name}"><strong>${file.name}</strong></td>
-                <td colspan="5" class="status-text">데이터 추출 중...</td>
+                <td colspan="6" class="status-text">데이터 추출 중...</td>
             `;
             resultsBody.appendChild(tr);
 
@@ -562,20 +586,25 @@
                     const googleLink = `https://www.google.com/maps?q=${latitude},${longitude}&ll=${latitude},${longitude}&z=17`;
 
                     // 데이터 배열에 푸시 (Excel, CSV 다운로드 용도)
+                    const latFixed = parseFloat(latitude).toFixed(6);
+                    const lngFixed = parseFloat(longitude).toFixed(6);
+
                     resultsData.push({
                         "파일명": file.name,
-                        "위도": parseFloat(latitude),
-                        "경도": parseFloat(longitude),
-                        "네이버지도": naverLink,
+                        "경도(Longitude, x)": parseFloat(longitude),
+                        "위도(Latitude, y)": parseFloat(latitude),
+                        "좌표 (x, y)": `${lngFixed}    ${latFixed}`,
                         "구글지도": googleLink,
+                        "네이버지도": naverLink,
                         "도로명주소": roadAddress,
                         "지번주소": lotAddress
                     });
 
                     tr.innerHTML = `
                         <td class="col-filename" title="${file.name}"><strong>${file.name}</strong></td>
-                        <td class="col-coord" style="font-family: monospace;">${latitude}</td>
-                        <td class="col-coord" style="font-family: monospace;">${longitude}</td>
+                        <td class="col-coord">${lngFixed}</td>
+                        <td class="col-coord">${latFixed}</td>
+                        <td class="col-xy">${lngFixed}&nbsp;&nbsp;&nbsp;&nbsp;${latFixed}</td>
                         <td class="col-map">
                             <div style="display: flex; gap: 8px; font-weight: bold;">
                                 <a href="${googleLink}" target="_blank" class="map-link">구글지도</a>
@@ -588,14 +617,14 @@
                 } else {
                     tr.innerHTML = `
                         <td class="col-filename" title="${file.name}"><strong>${file.name}</strong></td>
-                        <td colspan="5" class="error-text">GPS 메타데이터가 존재하지 않습니다.</td>
+                        <td colspan="6" class="error-text">GPS 메타데이터가 존재하지 않습니다.</td>
                     `;
                 }
             } catch (error) {
                 console.error(error);
                 tr.innerHTML = `
                     <td class="col-filename" title="${file.name}"><strong>${file.name}</strong></td>
-                    <td colspan="5" class="error-text">파일 형식이 잘못되었거나 읽을 수 없습니다.</td>
+                    <td colspan="6" class="error-text">파일 형식이 잘못되었거나 읽을 수 없습니다.</td>
                 `;
             }
         }
